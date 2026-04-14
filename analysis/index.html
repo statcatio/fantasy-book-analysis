@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fantasy Book Explorer</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --accent: #e94560;
+      --gold: #f5a623;
+      --text: #e0e0f0;
+      --muted: #888aaa;
+      --border: #2a2a4a;
+      --font: 'Georgia', serif;
+      --mono: 'Courier New', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 2.5rem 3rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+    }
+
+    header h1 {
+      font-size: 2.4rem;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+      text-shadow: 0 0 30px rgba(245,166,35,0.3);
+    }
+
+    header p {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 1rem;
+      font-family: var(--mono);
+    }
+
+    nav {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 3rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    nav button {
+      padding: 0.45rem 1.1rem;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      border-radius: 3px;
+      transition: all 0.15s;
+      letter-spacing: 0.05em;
+    }
+
+    nav button:hover, nav button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    main {
+      padding: 2rem 3rem;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .chart-title {
+      font-size: 1.25rem;
+      color: var(--gold);
+      margin-bottom: 0.3rem;
+    }
+
+    .chart-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-bottom: 1.5rem;
+    }
+
+    svg text { fill: var(--text); }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 0.7rem 1rem;
+      font-size: 0.82rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s;
+      max-width: 280px;
+      line-height: 1.6;
+      border-radius: 4px;
+      z-index: 100;
+      font-family: var(--mono);
+      color: var(--text);
+    }
+
+    #tooltip strong { color: var(--gold); display: block; font-family: var(--font); }
+
+    /* Scatter controls */
+    .controls {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+    }
+
+    .controls label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    .controls select {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      border-radius: 3px;
+      margin-left: 0.4rem;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.2rem;
+      margin-top: 0.8rem;
+      font-size: 0.78rem;
+      font-family: var(--mono);
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+    }
+
+    .legend-swatch {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Stat cards */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+    }
+
+    .stat-card .value {
+      font-size: 2rem;
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .stat-card .label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-top: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Fantasy Book Explorer</h1>
+  <p>1,000 fantasy books · ratings · genres · moods · eras</p>
+</header>
+
+<nav>
+  <button class="active" data-view="overview">Overview</button>
+  <button data-view="scatter">Year × Rating</button>
+  <button data-view="genres">Genres</button>
+  <button data-view="moods">Moods</button>
+  <button data-view="authors">Authors</button>
+</nav>
+
+<div id="tooltip"></div>
+
+<main>
+
+  <!-- OVERVIEW -->
+  <section class="view active" id="overview">
+    <h2 class="chart-title">Dataset at a Glance</h2>
+    <p class="chart-sub">Summary statistics across 1,000 fantasy books</p>
+    <div class="stat-grid" id="stat-grid"></div>
+    <h2 class="chart-title" style="margin-top:1rem;">Average Rating by Era</h2>
+    <p class="chart-sub">How does the perceived quality of fantasy fiction shift across literary periods?</p>
+    <div id="era-chart"></div>
+  </section>
+
+  <!-- SCATTER -->
+  <section class="view" id="scatter">
+    <h2 class="chart-title">Publication Year × Rating</h2>
+    <p class="chart-sub">Each dot is a book. Size = number of ratings. Color = top genre. Hover for details.</p>
+    <div class="controls">
+      <label>Color by
+        <select id="color-select">
+          <option value="genre">Genre</option>
+          <option value="mood">Mood</option>
+          <option value="series">Series / Standalone</option>
+        </select>
+      </label>
+      <label>Min ratings
+        <select id="min-ratings">
+          <option value="0">All</option>
+          <option value="100">100+</option>
+          <option value="500" selected>500+</option>
+          <option value="1000">1,000+</option>
+        </select>
+      </label>
+    </div>
+    <div id="legend" class="legend"></div>
+    <div id="scatter-chart"></div>
+  </section>
+
+  <!-- GENRES -->
+  <section class="view" id="genres">
+    <h2 class="chart-title">Top Genres</h2>
+    <p class="chart-sub">Most common top-genre tag per book (top 15)</p>
+    <div id="genre-chart"></div>
+  </section>
+
+  <!-- MOODS -->
+  <section class="view" id="moods">
+    <h2 class="chart-title">Dominant Moods</h2>
+    <p class="chart-sub">Emotional tone of fantasy books by reader-assigned mood tags</p>
+    <div id="mood-chart"></div>
+  </section>
+
+  <!-- AUTHORS -->
+  <section class="view" id="authors">
+    <h2 class="chart-title">Most Prolific Authors</h2>
+    <p class="chart-sub">Top 20 authors by number of books · dot size = mean rating</p>
+    <div id="author-chart"></div>
+  </section>
+
+</main>
+
+<script>
+// ─── Config ──────────────────────────────────────────────────────────────────
+const DATA = {
+  scatter:  "../data/processed/scatter.json",
+  genres:   "../data/processed/genres.json",
+  moods:    "../data/processed/moods.json",
+  eras:     "../data/processed/ratings_by_era.json",
+  authors:  "../data/processed/top_authors.json",
+};
+
+const COLORS = [
+  "#e94560","#f5a623","#4ecdc4","#45b7d1","#96ceb4",
+  "#feca57","#ff6b9d","#c44dff","#54a0ff","#5f27cd",
+  "#00d2d3","#ff9f43","#ee5a24","#009432","#0652dd",
+];
+
+const TIP = d3.select("#tooltip");
+
+function showTip(html, event) {
+  TIP.html(html).style("opacity", 1);
+  moveTip(event);
+}
+function moveTip(event) {
+  const x = event.clientX + 14;
+  const y = event.clientY - 10;
+  TIP.style("left", x + "px").style("top", y + "px");
+}
+function hideTip() { TIP.style("opacity", 0); }
+
+// ─── Nav ─────────────────────────────────────────────────────────────────────
+const views = {};
+document.querySelectorAll(".view").forEach(v => views[v.id] = v);
+let rendered = {};
+
+document.querySelectorAll("nav button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const id = btn.dataset.view;
+    Object.values(views).forEach(v => v.classList.remove("active"));
+    views[id].classList.add("active");
+    if (!rendered[id]) { rendered[id] = true; renderView(id); }
+  });
+});
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+Promise.all(Object.entries(DATA).map(([k, url]) =>
+  d3.json(url).then(d => [k, d])
+)).then(entries => {
+  const data = Object.fromEntries(entries);
+  rendered["overview"] = true;
+  renderOverview(data.eras, data.scatter);
+  setupScatter(data.scatter);
+  setupGenres(data.genres);
+  setupMoods(data.moods);
+  setupAuthors(data.authors);
+  function renderView(id) {
+    if (id === "scatter") renderScatter();
+    if (id === "genres") renderGenres();
+    if (id === "moods") renderMoods();
+    if (id === "authors") renderAuthors();
+  }
+  window.renderView = renderView;
+});
+
+// ─── Overview ────────────────────────────────────────────────────────────────
+function renderOverview(eras, books) {
+  const valid = books.filter(d => d.rating && d.ratings_count);
+  const statGrid = d3.select("#stat-grid");
+  const stats = [
+    { value: books.length.toLocaleString(), label: "Books" },
+    { value: d3.mean(valid, d => d.rating).toFixed(2), label: "Avg Rating" },
+    { value: d3.max(valid, d => d.ratings_count).toLocaleString(), label: "Most Ratings" },
+    { value: d3.extent(valid, d => d.release_year).join(" – "), label: "Year Range" },
+    { value: books.filter(d => d.is_series).length, label: "In a Series" },
+    { value: new Set(valid.map(d => d.author).filter(Boolean)).size, label: "Authors" },
+  ];
+  statGrid.selectAll(".stat-card").data(stats).join("div")
+    .attr("class", "stat-card")
+    .html(d => `<div class="value">${d.value}</div><div class="label">${d.label}</div>`);
+
+  // Era bar chart
+  const eraOrder = ["1800–1950","1950–1980","1980–2000","2000–2010","2010+"];
+  const eraData = eraOrder.map(e => eras.find(r => r.era === e)).filter(Boolean);
+
+  const W = Math.min(700, window.innerWidth - 100), H = 280;
+  const margin = { top: 20, right: 30, bottom: 50, left: 55 };
+  const w = W - margin.left - margin.right;
+  const h = H - margin.top - margin.bottom;
+
+  const svg = d3.select("#era-chart").append("svg")
+    .attr("width", W).attr("height", H)
+    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleBand().domain(eraData.map(d => d.era)).range([0, w]).padding(0.3);
+  const y = d3.scaleLinear().domain([3.5, d3.max(eraData, d => d.mean_rating) + 0.15]).range([h, 0]);
+
+  svg.append("g").call(d3.axisLeft(y).ticks(5).tickFormat(d => d.toFixed(1)))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.selectAll(".tick line").attr("stroke", "#2a2a4a").attr("x2", w));
+
+  svg.append("g").attr("transform", `translate(0,${h})`).call(d3.axisBottom(x))
+    .call(g => g.select(".domain").attr("stroke","#2a2a4a"))
+    .selectAll("text").attr("fill", "#888aaa").attr("font-size", "0.8rem");
+
+  svg.selectAll("rect").data(eraData).join("rect")
+    .attr("x", d => x(d.era))
+    .attr("y", d => y(d.mean_rating))
+    .attr("width", x.bandwidth())
+    .attr("height", d => h - y(d.mean_rating))
+    .attr("fill", (_, i) => COLORS[i % COLORS.length])
+    .attr("rx", 3)
+    .on("mousemove", (event, d) => showTip(
+      `<strong>${d.era}</strong>Avg rating: ${d.mean_rating.toFixed(3)}<br>Books: ${d.count}`, event
+    ))
+    .on("mouseleave", hideTip);
+
+  svg.selectAll(".bar-label").data(eraData).join("text")
+    .attr("class", "bar-label")
+    .attr("x", d => x(d.era) + x.bandwidth() / 2)
+    .attr("y", d => y(d.mean_rating) - 6)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "0.75rem")
+    .attr("fill", "#888aaa")
+    .text(d => d.mean_rating.toFixed(2));
+}
+
+// ─── Scatter ─────────────────────────────────────────────────────────────────
+let scatterData, scatterColor, scatterMinRatings;
+
+function setupScatter(data) {
+  scatterData = data;
+  d3.select("#color-select").on("change", renderScatter);
+  d3.select("#min-ratings").on("change", renderScatter);
+}
+
+function renderScatter() {
+  d3.select("#scatter-chart").selectAll("*").remove();
+  d3.select("#legend").selectAll("*").remove();
+
+  const colorBy = d3.select("#color-select").property("value");
+  const minR = +d3.select("#min-ratings").property("value");
+  const books = scatterData.filter(d => d.ratings_count >= minR && d.rating && d.release_year);
+
+  const W = Math.min(900, window.innerWidth - 80), H = 480;
+  const margin = { top: 20, right: 30, bottom: 60, left: 55 };
+  const w = W - margin.left - margin.right;
+  const h = H - margin.top - margin.bottom;
+
+  const svg = d3.select("#scatter-chart").append("svg")
+    .attr("width", W).attr("height", H)
+    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleLinear()
+    .domain(d3.extent(books, d => d.release_year)).nice()
+    .range([0, w]);
+
+  const y = d3.scaleLinear()
+    .domain(d3.extent(books, d => d.rating)).nice()
+    .range([h, 0]);
+
+  const rScale = d3.scaleSqrt()
+    .domain([0, d3.max(books, d => d.ratings_count)])
+    .range([2, 18]);
+
+  // Color scale
+  let colorKey, colorScale;
+  if (colorBy === "genre") {
+    colorKey = d => d.top_genre || "Other";
+  } else if (colorBy === "mood") {
+    colorKey = d => d.top_mood || "Unknown";
+  } else {
+    colorKey = d => d.is_series ? "Series" : "Standalone";
+  }
+
+  const domain = [...new Set(books.map(colorKey))].slice(0, COLORS.length);
+  colorScale = d3.scaleOrdinal().domain(domain).range(COLORS).unknown("#555");
+
+  // Grid
+  svg.append("g").call(d3.axisLeft(y).ticks(6).tickSize(-w).tickFormat(""))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.selectAll(".tick line").attr("stroke", "#1e1e3a").attr("stroke-dasharray", "3,3"));
+
+  // Axes
+  svg.append("g").attr("transform", `translate(0,${h})`)
+    .call(d3.axisBottom(x).tickFormat(d3.format("d")))
+    .call(g => g.select(".domain").attr("stroke","#2a2a4a"))
+    .selectAll("text").attr("fill","#888aaa");
+
+  svg.append("g").call(d3.axisLeft(y).ticks(6))
+    .call(g => g.select(".domain").attr("stroke","#2a2a4a"))
+    .selectAll("text").attr("fill","#888aaa");
+
+  // Axis labels
+  svg.append("text").attr("x", w / 2).attr("y", h + 46)
+    .attr("text-anchor","middle").attr("fill","#888aaa").attr("font-size","0.8rem")
+    .text("Publication Year");
+
+  svg.append("text").attr("transform","rotate(-90)")
+    .attr("x", -h/2).attr("y", -42)
+    .attr("text-anchor","middle").attr("fill","#888aaa").attr("font-size","0.8rem")
+    .text("Average Rating");
+
+  // Points
+  svg.selectAll("circle").data(books.sort((a,b) => b.ratings_count - a.ratings_count))
+    .join("circle")
+    .attr("cx", d => x(d.release_year))
+    .attr("cy", d => y(d.rating))
+    .attr("r", d => rScale(d.ratings_count))
+    .attr("fill", d => colorScale(colorKey(d)))
+    .attr("opacity", 0.65)
+    .attr("stroke", "none")
+    .on("mousemove", (event, d) => showTip(
+      `<strong>${d.title}</strong>
+      ${d.author || "Unknown author"} · ${d.release_year}<br>
+      Rating: ${d.rating.toFixed(2)} · ${d.ratings_count.toLocaleString()} ratings<br>
+      ${d.top_genre ? "Genre: " + d.top_genre : ""}${d.top_mood ? " · " + d.top_mood : ""}`, event
+    ))
+    .on("mousemove", (event, d) => { showTip(
+      `<strong>${d.title}</strong>${d.author || ""} · ${d.release_year}<br>` +
+      `Rating: ${d.rating.toFixed(2)} · ${d.ratings_count.toLocaleString()} ratings<br>` +
+      (d.top_genre ? `Genre: ${d.top_genre}` : ""), event); moveTip(event); })
+    .on("mouseleave", hideTip);
+
+  // Legend
+  const legendEl = d3.select("#legend");
+  domain.forEach(key => {
+    const item = legendEl.append("div").attr("class","legend-item");
+    item.append("div").attr("class","legend-swatch")
+      .style("background", colorScale(key));
+    item.append("span").text(key);
+  });
+}
+
+// ─── Genres ──────────────────────────────────────────────────────────────────
+let genreData;
+function setupGenres(data) { genreData = data; }
+
+function renderGenres() {
+  const W = Math.min(750, window.innerWidth - 80), H = 420;
+  const margin = { top: 10, right: 30, bottom: 20, left: 130 };
+  const w = W - margin.left - margin.right;
+  const h = H - margin.top - margin.bottom;
+
+  const svg = d3.select("#genre-chart").append("svg")
+    .attr("width", W).attr("height", H)
+    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const sorted = [...genreData].sort((a,b) => a.count - b.count);
+
+  const y = d3.scaleBand().domain(sorted.map(d => d.genre)).range([h, 0]).padding(0.25);
+  const x = d3.scaleLinear().domain([0, d3.max(sorted, d => d.count)]).range([0, w]);
+
+  svg.append("g").call(d3.axisLeft(y))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.selectAll(".tick line").remove())
+    .selectAll("text").attr("fill","#ccc").attr("font-size","0.82rem");
+
+  svg.selectAll("rect").data(sorted).join("rect")
+    .attr("y", d => y(d.genre))
+    .attr("height", y.bandwidth())
+    .attr("x", 0)
+    .attr("width", d => x(d.count))
+    .attr("fill", (_, i) => COLORS[i % COLORS.length])
+    .attr("rx", 3)
+    .on("mousemove", (event, d) => showTip(`<strong>${d.genre}</strong>${d.count} books`, event))
+    .on("mouseleave", hideTip);
+
+  svg.selectAll(".count-label").data(sorted).join("text")
+    .attr("y", d => y(d.genre) + y.bandwidth() / 2 + 4)
+    .attr("x", d => x(d.count) + 6)
+    .attr("font-size","0.75rem").attr("fill","#888aaa")
+    .text(d => d.count);
+}
+
+// ─── Moods ───────────────────────────────────────────────────────────────────
+let moodData;
+function setupMoods(data) { moodData = data; }
+
+function renderMoods() {
+  // Donut chart
+  const size = Math.min(480, window.innerWidth - 80);
+  const radius = size / 2 - 40;
+  const inner = radius * 0.48;
+
+  const svg = d3.select("#mood-chart").append("svg")
+    .attr("width", size).attr("height", size)
+    .append("g").attr("transform", `translate(${size/2},${size/2})`);
+
+  const pie = d3.pie().value(d => d.count).sort(null);
+  const arc = d3.arc().innerRadius(inner).outerRadius(radius);
+  const labelArc = d3.arc().innerRadius(radius + 14).outerRadius(radius + 14);
+
+  const color = d3.scaleOrdinal().domain(moodData.map(d => d.mood)).range(COLORS);
+
+  const arcs = svg.selectAll("path").data(pie(moodData)).join("path")
+    .attr("d", arc)
+    .attr("fill", d => color(d.data.mood))
+    .attr("stroke", "#0f0f1a")
+    .attr("stroke-width", 2)
+    .on("mousemove", (event, d) => showTip(
+      `<strong>${d.data.mood}</strong>${d.data.count} books`, event))
+    .on("mouseleave", hideTip);
+
+  svg.selectAll(".mood-label").data(pie(moodData)).join("text")
+    .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "0.7rem")
+    .attr("fill", "#ccc")
+    .text(d => d.data.count > 15 ? d.data.mood : "");
+
+  // Center label
+  svg.append("text").attr("text-anchor","middle").attr("dy","-0.2em")
+    .attr("font-size","1.6rem").attr("fill","#f5a623")
+    .text(moodData.reduce((s,d) => s + d.count, 0));
+  svg.append("text").attr("text-anchor","middle").attr("dy","1.2em")
+    .attr("font-size","0.75rem").attr("fill","#888aaa")
+    .text("books tagged");
+}
+
+// ─── Authors ─────────────────────────────────────────────────────────────────
+let authorData;
+function setupAuthors(data) { authorData = data; }
+
+function renderAuthors() {
+  const W = Math.min(800, window.innerWidth - 80), H = 460;
+  const margin = { top: 20, right: 40, bottom: 60, left: 150 };
+  const w = W - margin.left - margin.right;
+  const h = H - margin.top - margin.bottom;
+
+  const svg = d3.select("#author-chart").append("svg")
+    .attr("width", W).attr("height", H)
+    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const sorted = [...authorData].sort((a,b) => a.book_count - b.book_count);
+
+  const y = d3.scaleBand().domain(sorted.map(d => d.author)).range([h, 0]).padding(0.3);
+  const x = d3.scaleLinear().domain([0, d3.max(sorted, d => d.book_count)]).range([0, w]);
+  const ratingColor = d3.scaleSequential(d3.interpolateYlOrRd)
+    .domain([d3.min(sorted, d => d.mean_rating), d3.max(sorted, d => d.mean_rating)]);
+
+  svg.append("g").call(d3.axisLeft(y))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.selectAll(".tick line").remove())
+    .selectAll("text").attr("fill","#ccc").attr("font-size","0.8rem");
+
+  svg.append("g").attr("transform", `translate(0,${h})`)
+    .call(d3.axisBottom(x).ticks(5).tickFormat(d3.format("d")))
+    .call(g => g.select(".domain").attr("stroke","#2a2a4a"))
+    .selectAll("text").attr("fill","#888aaa");
+
+  svg.append("text").attr("x", w/2).attr("y", h + 44)
+    .attr("text-anchor","middle").attr("fill","#888aaa").attr("font-size","0.8rem")
+    .text("Number of Books");
+
+  svg.selectAll("rect").data(sorted).join("rect")
+    .attr("y", d => y(d.author))
+    .attr("height", y.bandwidth())
+    .attr("width", d => x(d.book_count))
+    .attr("fill", d => ratingColor(d.mean_rating))
+    .attr("rx", 3)
+    .on("mousemove", (event, d) => showTip(
+      `<strong>${d.author}</strong>${d.book_count} books in dataset<br>Mean rating: ${d.mean_rating.toFixed(2)}`, event))
+    .on("mouseleave", hideTip);
+
+  svg.selectAll(".count-label").data(sorted).join("text")
+    .attr("y", d => y(d.author) + y.bandwidth()/2 + 4)
+    .attr("x", d => x(d.book_count) + 5)
+    .attr("font-size","0.75rem").attr("fill","#888aaa")
+    .text(d => d.book_count);
+}
+</script>
+</body>
+</html>
