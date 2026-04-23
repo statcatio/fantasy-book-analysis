@@ -3,20 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fantasy Book Explorer</title>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f0f1a;
-      --surface: #1a1a2e;
-      --surface2: #16213e;
-      --accent: #e94560;
-      --gold: #f5a623;
-      --text: #e0e0f0;
-      --muted: #888aaa;
-      --border: #2a2a4a;
-      --font: 'Georgia', serif;
-      --mono: 'Courier New', monospace;
+      --bg:      #faf7f2;
+      --surface: #f0ebe1;
+      --surface2:#e8e1d6;
+      --accent:  #d4756a;
+      --ink:     #c05a4f;
+      --text:    #2e2a25;
+      --muted:   #8a7f74;
+      --border:  #d6cfc4;
+      --font:    'Source Serif 4', Georgia, serif;
+      --display: 'Playfair Display', Georgia, serif;
+      --mono:    'DM Mono', 'Courier New', monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,134 +27,215 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--font);
+      font-size: 1rem;
+      line-height: 1.75;
       min-height: 100vh;
     }
 
-    header {
-      padding: 2.5rem 3rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
-    }
-
-    header h1 {
-      font-size: 2.4rem;
-      letter-spacing: 0.04em;
-      color: var(--gold);
-      text-shadow: 0 0 30px rgba(245,166,35,0.3);
-    }
-
-    header p {
-      color: var(--muted);
-      margin-top: 0.4rem;
-      font-size: 1rem;
-      font-family: var(--mono);
-    }
-
-    nav {
-      display: flex;
-      gap: 0.5rem;
-      padding: 1rem 3rem;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-
-    nav button {
-      padding: 0.45rem 1.1rem;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      border-radius: 3px;
-      transition: all 0.15s;
-      letter-spacing: 0.05em;
-    }
-
-    nav button:hover, nav button.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    main {
-      padding: 2rem 3rem;
-      max-width: 1300px;
+    /* ── Layout ── */
+    .col {
+      max-width: 768px;
       margin: 0 auto;
+      padding: 0 1.5rem;
     }
 
-    .view { display: none; }
-    .view.active { display: block; }
-
-    .chart-title {
-      font-size: 1.25rem;
-      color: var(--gold);
-      margin-bottom: 0.3rem;
+    /* ── Hero ── */
+    .hero {
+      padding: 5rem 0 4rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
     }
 
-    .chart-sub {
-      font-size: 0.85rem;
-      color: var(--muted);
+    .hero-eyebrow {
       font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
       margin-bottom: 1.5rem;
     }
 
+    .hero h1 {
+      font-family: var(--display);
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-lede {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 55ch;
+      margin: 0 auto 2rem;
+      line-height: 1.8;
+    }
+
+    .hero-byline {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--border);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Main ── */
+    main {
+      padding-bottom: 6rem;
+    }
+
+    /* ── Sections ── */
+    .section {
+      padding-top: 4rem;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+    }
+
+    .section:first-child {
+      border-top: none;
+      margin-top: 0;
+      padding-top: 3rem;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .section-title {
+      font-family: var(--display);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-bottom: 2rem;
+      max-width: 60ch;
+    }
+
+    /* ── Prose ── */
+    .prose {
+      font-size: 1rem;
+      line-height: 1.85;
+      color: var(--text);
+      max-width: 62ch;
+      margin: 0 auto 3rem;
+      text-align: center;
+    }
+
+    /* ── Stat cards ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin-bottom: 3rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .stat-card {
+      padding: 1.25rem 1rem;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .stat-card:nth-child(3n) { border-right: none; }
+    .stat-card:nth-last-child(-n+3) { border-bottom: none; }
+
+    .stat-card .value {
+      font-family: var(--display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .stat-card .label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    /* ── Charts ── */
     svg text { fill: var(--text); }
 
-    /* Tooltip */
+    /* ── Tooltip ── */
     #tooltip {
       position: fixed;
-      background: var(--surface2);
+      background: var(--bg);
       border: 1px solid var(--border);
-      padding: 0.7rem 1rem;
-      font-size: 0.82rem;
+      box-shadow: 0 4px 16px rgba(46,42,37,0.08);
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.12s;
-      max-width: 280px;
+      transition: opacity 0.1s;
+      max-width: 260px;
       line-height: 1.6;
-      border-radius: 4px;
+      border-radius: 3px;
       z-index: 100;
       font-family: var(--mono);
       color: var(--text);
     }
 
-    #tooltip strong { color: var(--gold); display: block; font-family: var(--font); }
+    #tooltip strong {
+      font-family: var(--display);
+      font-size: 0.92rem;
+      color: var(--ink);
+      display: block;
+      margin-bottom: 0.15rem;
+    }
 
-    /* Scatter controls */
+    /* ── Controls ── */
     .controls {
       display: flex;
       gap: 1.5rem;
       align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
     }
 
     .controls label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--muted);
       font-family: var(--mono);
+      letter-spacing: 0.05em;
     }
 
     .controls select {
-      background: var(--surface2);
+      background: var(--surface);
       color: var(--text);
       border: 1px solid var(--border);
       padding: 0.3rem 0.6rem;
       font-family: var(--mono);
-      font-size: 0.8rem;
-      border-radius: 3px;
+      font-size: 0.75rem;
+      border-radius: 2px;
       margin-left: 0.4rem;
+      cursor: pointer;
     }
 
-    /* Legend */
+    /* ── Legend ── */
     .legend {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem 1.2rem;
-      margin-top: 0.8rem;
-      font-size: 0.78rem;
+      gap: 0.4rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.75rem;
       font-family: var(--mono);
       color: var(--muted);
     }
@@ -165,131 +248,186 @@
     }
 
     .legend-swatch {
-      width: 10px; height: 10px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       flex-shrink: 0;
     }
 
-    /* Stat cards */
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
+    /* ── Bookshelf ── */
+    .shelf-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .shelf-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      padding-bottom: 10px;
+      border-bottom: 8px solid #c4a87a;
+      box-shadow: 0 5px 0 #a8885a;
       margin-bottom: 2rem;
     }
 
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 1rem 1.2rem;
+    .book-cover {
+      position: relative;
+      flex-shrink: 0;
+      width: 84px;
+      cursor: pointer;
+      transition: transform 0.18s ease;
     }
 
-    .stat-card .value {
-      font-size: 2rem;
-      color: var(--gold);
-      font-weight: bold;
+    .book-cover:hover { transform: translateY(-10px); z-index: 2; }
+
+    .book-cover img {
+      width: 84px;
+      height: 126px;
+      object-fit: cover;
+      display: block;
+      border-radius: 2px;
+      box-shadow: 2px 3px 10px rgba(46,42,37,0.2);
     }
 
-    .stat-card .label {
-      font-size: 0.75rem;
-      color: var(--muted);
+    .book-cover-fallback {
+      width: 84px;
+      height: 126px;
+      background: var(--surface2);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
       font-family: var(--mono);
-      margin-top: 0.2rem;
+      font-size: 0.6rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.3;
+      box-shadow: 2px 3px 10px rgba(46,42,37,0.1);
+    }
+
+    .book-rank {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      padding: 1px 5px;
+      border-radius: 2px;
+      line-height: 1.6;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>Fantasy Book Explorer</h1>
-  <p>1,000 fantasy books · ratings · genres · moods · eras</p>
+<header class="hero">
+  <div class="col">
+    <!-- <p class="hero-eyebrow">A data analysis</p> -->
+    <h1>It's Official:<br>Ghosts Are Coming Back</h1>
+    <p class="hero-lede">After I finished all 3 books from the Emily Wilde Series by Heather Fawcett in 2 days, I realized how much I love what people call "cozy adult fantasy." So I pulled 1,000 books to find out what's really in them, specifically what creatures are commonly mentionedd</p>
+    <p class="hero-byline">Fantasy books · Data from Hardcover.app · 2026</p>
+  </div>
 </header>
-
-<nav>
-  <button class="active" data-view="overview">Overview</button>
-  <button data-view="scatter">Year × Rating</button>
-  <button data-view="genres">Genres</button>
-  <button data-view="moods">Moods</button>
-  <button data-view="authors">Authors</button>
-</nav>
 
 <div id="tooltip"></div>
 
 <main>
+  <div class="col">
 
-  <!-- OVERVIEW -->
-  <section class="view active" id="overview">
-    <h2 class="chart-title">Dataset at a Glance</h2>
-    <p class="chart-sub">Summary statistics across 1,000 fantasy books</p>
-    <div class="stat-grid" id="stat-grid"></div>
-    <h2 class="chart-title" style="margin-top:1rem;">Average Rating by Era</h2>
-    <p class="chart-sub">How does the perceived quality of fantasy fiction shift across literary periods?</p>
-    <div id="era-chart"></div>
-  </section>
-
-  <!-- SCATTER -->
-  <section class="view" id="scatter">
-    <h2 class="chart-title">Publication Year × Rating</h2>
-    <p class="chart-sub">Each dot is a book. Size = number of ratings. Color = top genre. Hover for details.</p>
-    <div class="controls">
-      <label>Color by
-        <select id="color-select">
-          <option value="genre">Genre</option>
-          <option value="mood">Mood</option>
-          <option value="series">Series / Standalone</option>
-        </select>
-      </label>
-      <label>Min ratings
-        <select id="min-ratings">
-          <option value="0">All</option>
-          <option value="100">100+</option>
-          <option value="500" selected>500+</option>
-          <option value="1000">1,000+</option>
-        </select>
-      </label>
+    <div class="section" style="border-top:none; margin-top:0; padding-top:3rem;">
+      <p class="section-label">The dataset</p>
+      <h2 class="section-title"> Dataset at a Glance</h2>
+      <p class="section-desc">Summary statistics across the full dataset</p>
+      <div class="stat-grid" id="stat-grid"></div>
+      <p class="shelf-eyebrow">Top 10 most popular · 21st century</p>
+      <div id="bookshelf"></div>
     </div>
-    <div id="legend" class="legend"></div>
-    <div id="scatter-chart"></div>
-  </section>
 
-  <!-- GENRES -->
-  <section class="view" id="genres">
-    <h2 class="chart-title">Top Genres</h2>
-    <p class="chart-sub">Most common top-genre tag per book (top 15)</p>
-    <div id="genre-chart"></div>
-  </section>
+    <!-- <div class="section">
+      <p class="section-label">Ratings over time</p>
+      <h2 class="section-title">Average Rating by Era</h2>
+      <p class="section-desc">How does perceived quality of fantasy fiction shift across literary periods?</p>
+      <div id="era-chart"></div>
+    </div> -->
 
-  <!-- MOODS -->
-  <section class="view" id="moods">
-    <h2 class="chart-title">Dominant Moods</h2>
-    <p class="chart-sub">Emotional tone of fantasy books by reader-assigned mood tags</p>
-    <div id="mood-chart"></div>
-  </section>
+    <div class="section">
+      <p class="section-label">Year &amp; quality</p>
+      <h2 class="section-title">Publication Year × Rating</h2>
+      <p class="section-desc">Each dot is a book. Size = number of ratings. Color = top genre. Hover for details.</p>
+      <div class="controls">
+        <label>Color by
+          <select id="color-select">
+            <option value="genre">Genre</option>
+            <option value="mood">Mood</option>
+            <option value="series">Series / Standalone</option>
+          </select>
+        </label>
+        <label>Min ratings
+          <select id="min-ratings">
+            <option value="0">All</option>
+            <option value="100">100+</option>
+            <option value="500" selected>500+</option>
+            <option value="1000">1,000+</option>
+          </select>
+        </label>
+      </div>
+      <div id="legend" class="legend"></div>
+      <div id="scatter-chart"></div>
+    </div>
 
-  <!-- AUTHORS -->
-  <section class="view" id="authors">
-    <h2 class="chart-title">Most Prolific Authors</h2>
-    <p class="chart-sub">Top 20 authors by number of books · dot size = mean rating</p>
-    <div id="author-chart"></div>
-  </section>
+    <div class="section">
+      <p class="section-label">What readers reach for</p>
+      <h2 class="section-title">Top Genres</h2>
+      <p class="section-desc">Most common top-genre tag per book (top 15)</p>
+      <div id="genre-chart"></div>
+    </div>
 
+    <div class="section">
+      <p class="section-label">How books feel</p>
+      <h2 class="section-title">Dominant Moods</h2>
+      <p class="section-desc">Emotional tone by reader-assigned mood tags</p>
+      <div id="mood-chart"></div>
+    </div>
+
+    <div class="section">
+      <p class="section-label">Who writes the most</p>
+      <h2 class="section-title">Most Prolific Authors</h2>
+      <p class="section-desc">Top 20 authors by number of books · bar color = mean rating</p>
+      <div id="author-chart"></div>
+    </div>
+
+    <div class="section">
+      <p class="section-label">The headline finding</p>
+      <h2 class="section-title">Creature Mentions Over Time</h2>
+      <p class="section-desc">% of books each decade whose description mentions each creature · click legend to toggle</p>
+      <div id="creature-legend" class="legend"></div>
+      <div id="creature-chart"></div>
+    </div>
+
+  </div>
 </main>
 
 <script>
 // ─── Config ──────────────────────────────────────────────────────────────────
 const DATA = {
-  scatter:  "../data/processed/scatter.json",
-  genres:   "../data/processed/genres.json",
-  moods:    "../data/processed/moods.json",
-  eras:     "../data/processed/ratings_by_era.json",
-  authors:  "../data/processed/top_authors.json",
+  scatter:   "../data/processed/scatter.json",
+  genres:    "../data/processed/genres.json",
+  moods:     "../data/processed/moods.json",
+  eras:      "../data/processed/ratings_by_era.json",
+  authors:   "../data/processed/top_authors.json",
+  creatures: "../data/processed/creature_timeline.json",
 };
 
 const COLORS = [
-  "#e94560","#f5a623","#4ecdc4","#45b7d1","#96ceb4",
-  "#feca57","#ff6b9d","#c44dff","#54a0ff","#5f27cd",
-  "#00d2d3","#ff9f43","#ee5a24","#009432","#0652dd",
+  "#d4756a","#7ab8c2","#a8c09a","#e8a87c","#9b8db5",
+  "#e8c47a","#c07a8e","#6aabaa","#b5956a","#7a9fc0",
+  "#c4a882","#8ab5a0","#d49a7a","#a09abf","#7ab89a",
 ];
 
 const TIP = d3.select("#tooltip");
@@ -321,22 +459,98 @@ document.querySelectorAll("nav button").forEach(btn => {
   });
 });
 
+// ─── Bookshelf ───────────────────────────────────────────────────────────────
+const COVERS = {
+  "Project Hail Mary":                        "../src/image/project_hail_mary.png",
+  // Add more as you save them, e.g.:
+  "The Hunger Games":                      "../src/image/hunger-games.png",
+  // "Harry Potter and the Goblet of Fire":   "../src/image/hp-goblet.jpg",
+  // "Harry Potter and the Order of the Phoenix": "../src/image/hp-ootp.jpg",
+  // "Harry Potter and the Deathly Hallows":  "../src/image/hp-dh.jpg",
+  // "Harry Potter and the Half-Blood Prince":"../src/image/hp-hbp.jpg",
+  // "The Martian":                           "../src/image/the-martian.jpg",
+  // "Catching Fire":                         "../src/image/catching-fire.jpg",
+  // "Mistborn: The Final Empire":            "../src/image/mistborn.jpg",
+  // "Ready Player One":                      "../src/image/ready-player-one.jpg",
+};
+
+function renderBookshelf(books) {
+  const top10 = books
+    .filter(d => d.release_year >= 2000 && d.ratings_count)
+    .sort((a, b) => b.ratings_count - a.ratings_count)
+    .slice(0, 10)
+    .map((book, i) => ({ ...book, rank: i + 1, coverUrl: COVERS[book.title] || null }));
+
+  const container = document.getElementById("bookshelf");
+  const bookW = 84, gap = 8;
+  const perRow = Math.max(1, Math.floor((container.offsetWidth + gap) / (bookW + gap)));
+
+  for (let i = 0; i < top10.length; i += perRow) {
+    const rowEl = document.createElement("div");
+    rowEl.className = "shelf-row";
+
+    top10.slice(i, i + perRow).forEach(book => {
+      const wrap = document.createElement("div");
+      wrap.className = "book-cover";
+
+      const rank = document.createElement("span");
+      rank.className = "book-rank";
+      rank.textContent = `#${book.rank}`;
+      wrap.appendChild(rank);
+
+      if (book.coverUrl) {
+        const img = document.createElement("img");
+        img.src = book.coverUrl;
+        img.alt = book.title;
+        img.onerror = () => img.replaceWith(makeFallback(book.title));
+        wrap.appendChild(img);
+      } else {
+        wrap.appendChild(makeFallback(book.title));
+      }
+
+      wrap.addEventListener("mouseenter", e => showTip(
+        `<strong>${book.title}</strong>${book.author || ""} · ${book.release_year}<br>` +
+        `${book.ratings_count.toLocaleString()} ratings · ${book.rating?.toFixed(2) || "—"} avg`, e
+      ));
+      wrap.addEventListener("mousemove", moveTip);
+      wrap.addEventListener("mouseleave", hideTip);
+      rowEl.appendChild(wrap);
+    });
+
+    container.appendChild(rowEl);
+  }
+}
+
+function makeFallback(title) {
+  const el = document.createElement("div");
+  el.className = "book-cover-fallback";
+  el.textContent = title;
+  return el;
+}
+
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 Promise.all(Object.entries(DATA).map(([k, url]) =>
   d3.json(url).then(d => [k, d])
 )).then(entries => {
   const data = Object.fromEntries(entries);
-  rendered["overview"] = true;
+  renderBookshelf(data.scatter);
   renderOverview(data.eras, data.scatter);
   setupScatter(data.scatter);
   setupGenres(data.genres);
   setupMoods(data.moods);
   setupAuthors(data.authors);
+  setupCreatures(data.creatures);
+  renderScatter();
+  renderGenres();
+  renderMoods();
+  renderAuthors();
+  renderCreatures();
   function renderView(id) {
     if (id === "scatter") renderScatter();
     if (id === "genres") renderGenres();
     if (id === "moods") renderMoods();
     if (id === "authors") renderAuthors();
+    if (id === "creatures") renderCreatures();
   }
   window.renderView = renderView;
 });
@@ -347,11 +561,12 @@ function renderOverview(eras, books) {
   const statGrid = d3.select("#stat-grid");
   const stats = [
     { value: books.length.toLocaleString(), label: "Books" },
+        { value: books.filter(d => d.is_series).length, label: "In a Series" },
+         { value: new Set(valid.map(d => d.author).filter(Boolean)).size, label: "Authors" },
+             { value: d3.extent(valid, d => d.release_year).join(" – "), label: "Year Range" },
+
     { value: d3.mean(valid, d => d.rating).toFixed(2), label: "Avg Rating" },
-    { value: d3.max(valid, d => d.ratings_count).toLocaleString(), label: "Most Ratings" },
-    { value: d3.extent(valid, d => d.release_year).join(" – "), label: "Year Range" },
-    { value: books.filter(d => d.is_series).length, label: "In a Series" },
-    { value: new Set(valid.map(d => d.author).filter(Boolean)).size, label: "Authors" },
+    { value: d3.max(valid, d => d.ratings_count).toLocaleString(), label: "Most Ratings" }
   ];
   statGrid.selectAll(".stat-card").data(stats).join("div")
     .attr("class", "stat-card")
@@ -361,7 +576,7 @@ function renderOverview(eras, books) {
   const eraOrder = ["1800–1950","1950–1980","1980–2000","2000–2010","2010+"];
   const eraData = eraOrder.map(e => eras.find(r => r.era === e)).filter(Boolean);
 
-  const W = Math.min(700, window.innerWidth - 100), H = 280;
+  const W = Math.min(700, window.innerWidth - 48), H = 280;
   const margin = { top: 20, right: 30, bottom: 50, left: 55 };
   const w = W - margin.left - margin.right;
   const h = H - margin.top - margin.bottom;
@@ -375,11 +590,11 @@ function renderOverview(eras, books) {
 
   svg.append("g").call(d3.axisLeft(y).ticks(5).tickFormat(d => d.toFixed(1)))
     .call(g => g.select(".domain").remove())
-    .call(g => g.selectAll(".tick line").attr("stroke", "#2a2a4a").attr("x2", w));
+    .call(g => g.selectAll(".tick line").attr("stroke", "#d6cfc4").attr("x2", w));
 
   svg.append("g").attr("transform", `translate(0,${h})`).call(d3.axisBottom(x))
-    .call(g => g.select(".domain").attr("stroke","#2a2a4a"))
-    .selectAll("text").attr("fill", "#888aaa").attr("font-size", "0.8rem");
+    .call(g => g.select(".domain").attr("stroke","#d6cfc4"))
+    .selectAll("text").attr("fill", "#8a7f74").attr("font-size", "0.8rem");
 
   svg.selectAll("rect").data(eraData).join("rect")
     .attr("x", d => x(d.era))
@@ -399,7 +614,7 @@ function renderOverview(eras, books) {
     .attr("y", d => y(d.mean_rating) - 6)
     .attr("text-anchor", "middle")
     .attr("font-size", "0.75rem")
-    .attr("fill", "#888aaa")
+    .attr("fill", "#8a7f74")
     .text(d => d.mean_rating.toFixed(2));
 }
 
@@ -420,7 +635,7 @@ function renderScatter() {
   const minR = +d3.select("#min-ratings").property("value");
   const books = scatterData.filter(d => d.ratings_count >= minR && d.rating && d.release_year);
 
-  const W = Math.min(900, window.innerWidth - 80), H = 480;
+  const W = Math.min(720, window.innerWidth - 48), H = 480;
   const margin = { top: 20, right: 30, bottom: 60, left: 55 };
   const w = W - margin.left - margin.right;
   const h = H - margin.top - margin.bottom;
@@ -457,26 +672,26 @@ function renderScatter() {
   // Grid
   svg.append("g").call(d3.axisLeft(y).ticks(6).tickSize(-w).tickFormat(""))
     .call(g => g.select(".domain").remove())
-    .call(g => g.selectAll(".tick line").attr("stroke", "#1e1e3a").attr("stroke-dasharray", "3,3"));
+    .call(g => g.selectAll(".tick line").attr("stroke", "#e0d9cf").attr("stroke-dasharray", "3,3"));
 
   // Axes
   svg.append("g").attr("transform", `translate(0,${h})`)
     .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-    .call(g => g.select(".domain").attr("stroke","#2a2a4a"))
-    .selectAll("text").attr("fill","#888aaa");
+    .call(g => g.select(".domain").attr("stroke","#d6cfc4"))
+    .selectAll("text").attr("fill","#8a7f74");
 
   svg.append("g").call(d3.axisLeft(y).ticks(6))
-    .call(g => g.select(".domain").attr("stroke","#2a2a4a"))
-    .selectAll("text").attr("fill","#888aaa");
+    .call(g => g.select(".domain").attr("stroke","#d6cfc4"))
+    .selectAll("text").attr("fill","#8a7f74");
 
   // Axis labels
   svg.append("text").attr("x", w / 2).attr("y", h + 46)
-    .attr("text-anchor","middle").attr("fill","#888aaa").attr("font-size","0.8rem")
+    .attr("text-anchor","middle").attr("fill","#8a7f74").attr("font-size","0.8rem")
     .text("Publication Year");
 
   svg.append("text").attr("transform","rotate(-90)")
     .attr("x", -h/2).attr("y", -42)
-    .attr("text-anchor","middle").attr("fill","#888aaa").attr("font-size","0.8rem")
+    .attr("text-anchor","middle").attr("fill","#8a7f74").attr("font-size","0.8rem")
     .text("Average Rating");
 
   // Points
@@ -515,7 +730,7 @@ let genreData;
 function setupGenres(data) { genreData = data; }
 
 function renderGenres() {
-  const W = Math.min(750, window.innerWidth - 80), H = 420;
+  const W = Math.min(720, window.innerWidth - 48), H = 420;
   const margin = { top: 10, right: 30, bottom: 20, left: 130 };
   const w = W - margin.left - margin.right;
   const h = H - margin.top - margin.bottom;
@@ -532,7 +747,7 @@ function renderGenres() {
   svg.append("g").call(d3.axisLeft(y))
     .call(g => g.select(".domain").remove())
     .call(g => g.selectAll(".tick line").remove())
-    .selectAll("text").attr("fill","#ccc").attr("font-size","0.82rem");
+    .selectAll("text").attr("fill","#5a5248").attr("font-size","0.82rem");
 
   svg.selectAll("rect").data(sorted).join("rect")
     .attr("y", d => y(d.genre))
@@ -547,7 +762,7 @@ function renderGenres() {
   svg.selectAll(".count-label").data(sorted).join("text")
     .attr("y", d => y(d.genre) + y.bandwidth() / 2 + 4)
     .attr("x", d => x(d.count) + 6)
-    .attr("font-size","0.75rem").attr("fill","#888aaa")
+    .attr("font-size","0.75rem").attr("fill","#8a7f74")
     .text(d => d.count);
 }
 
@@ -557,7 +772,7 @@ function setupMoods(data) { moodData = data; }
 
 function renderMoods() {
   // Donut chart
-  const size = Math.min(480, window.innerWidth - 80);
+  const size = Math.min(480, window.innerWidth - 48);
   const radius = size / 2 - 40;
   const inner = radius * 0.48;
 
@@ -574,7 +789,7 @@ function renderMoods() {
   const arcs = svg.selectAll("path").data(pie(moodData)).join("path")
     .attr("d", arc)
     .attr("fill", d => color(d.data.mood))
-    .attr("stroke", "#0f0f1a")
+    .attr("stroke", "#faf7f2")
     .attr("stroke-width", 2)
     .on("mousemove", (event, d) => showTip(
       `<strong>${d.data.mood}</strong>${d.data.count} books`, event))
@@ -584,15 +799,15 @@ function renderMoods() {
     .attr("transform", d => `translate(${labelArc.centroid(d)})`)
     .attr("text-anchor", "middle")
     .attr("font-size", "0.7rem")
-    .attr("fill", "#ccc")
+    .attr("fill", "#5a5248")
     .text(d => d.data.count > 15 ? d.data.mood : "");
 
   // Center label
   svg.append("text").attr("text-anchor","middle").attr("dy","-0.2em")
-    .attr("font-size","1.6rem").attr("fill","#f5a623")
+    .attr("font-size","1.6rem").attr("fill","#c05a4f")
     .text(moodData.reduce((s,d) => s + d.count, 0));
   svg.append("text").attr("text-anchor","middle").attr("dy","1.2em")
-    .attr("font-size","0.75rem").attr("fill","#888aaa")
+    .attr("font-size","0.75rem").attr("fill","#8a7f74")
     .text("books tagged");
 }
 
@@ -601,7 +816,7 @@ let authorData;
 function setupAuthors(data) { authorData = data; }
 
 function renderAuthors() {
-  const W = Math.min(800, window.innerWidth - 80), H = 460;
+  const W = Math.min(720, window.innerWidth - 48), H = 460;
   const margin = { top: 20, right: 40, bottom: 60, left: 150 };
   const w = W - margin.left - margin.right;
   const h = H - margin.top - margin.bottom;
@@ -620,15 +835,15 @@ function renderAuthors() {
   svg.append("g").call(d3.axisLeft(y))
     .call(g => g.select(".domain").remove())
     .call(g => g.selectAll(".tick line").remove())
-    .selectAll("text").attr("fill","#ccc").attr("font-size","0.8rem");
+    .selectAll("text").attr("fill","#5a5248").attr("font-size","0.8rem");
 
   svg.append("g").attr("transform", `translate(0,${h})`)
     .call(d3.axisBottom(x).ticks(5).tickFormat(d3.format("d")))
-    .call(g => g.select(".domain").attr("stroke","#2a2a4a"))
-    .selectAll("text").attr("fill","#888aaa");
+    .call(g => g.select(".domain").attr("stroke","#d6cfc4"))
+    .selectAll("text").attr("fill","#8a7f74");
 
   svg.append("text").attr("x", w/2).attr("y", h + 44)
-    .attr("text-anchor","middle").attr("fill","#888aaa").attr("font-size","0.8rem")
+    .attr("text-anchor","middle").attr("fill","#8a7f74").attr("font-size","0.8rem")
     .text("Number of Books");
 
   svg.selectAll("rect").data(sorted).join("rect")
@@ -644,8 +859,119 @@ function renderAuthors() {
   svg.selectAll(".count-label").data(sorted).join("text")
     .attr("y", d => y(d.author) + y.bandwidth()/2 + 4)
     .attr("x", d => x(d.book_count) + 5)
-    .attr("font-size","0.75rem").attr("fill","#888aaa")
+    .attr("font-size","0.75rem").attr("fill","#8a7f74")
     .text(d => d.book_count);
+}
+
+// ─── Creatures ───────────────────────────────────────────────────────────────
+const CREATURE_NAMES = ["Dragon","Witch","Vampire","Elf","Werewolf","Fae","Demon","Ghost","Orc","Wizard"];
+let creatureData, hiddenCreatures = new Set();
+
+function setupCreatures(data) { creatureData = data; }
+
+function renderCreatures() {
+  d3.select("#creature-chart").selectAll("*").remove();
+  d3.select("#creature-legend").selectAll("*").remove();
+
+  const W = Math.min(720, window.innerWidth - 48), H = 460;
+  const margin = { top: 20, right: 30, bottom: 55, left: 50 };
+  const w = W - margin.left - margin.right;
+  const h = H - margin.top - margin.bottom;
+
+  const color = d3.scaleOrdinal().domain(CREATURE_NAMES).range(COLORS);
+
+  // Legend with toggle
+  const legendEl = d3.select("#creature-legend");
+  CREATURE_NAMES.forEach(name => {
+    const item = legendEl.append("div").attr("class","legend-item")
+      .style("opacity", hiddenCreatures.has(name) ? "0.3" : "1")
+      .on("click", () => {
+        if (hiddenCreatures.has(name)) hiddenCreatures.delete(name);
+        else hiddenCreatures.add(name);
+        renderCreatures();
+      });
+    item.append("div").attr("class","legend-swatch").style("background", color(name));
+    item.append("span").text(name);
+  });
+
+  const visible = CREATURE_NAMES.filter(n => !hiddenCreatures.has(n));
+
+  const svg = d3.select("#creature-chart").append("svg")
+    .attr("width", W).attr("height", H)
+    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleLinear()
+    .domain(d3.extent(creatureData, d => d.decade))
+    .range([0, w]);
+
+  const maxPct = d3.max(creatureData, d => d3.max(visible, n => d[n])) || 10;
+  const y = d3.scaleLinear().domain([0, maxPct + 2]).range([h, 0]);
+
+  // Grid
+  svg.append("g").call(d3.axisLeft(y).ticks(5).tickSize(-w).tickFormat(""))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.selectAll(".tick line").attr("stroke","#e0d9cf").attr("stroke-dasharray","3,3"));
+
+  // Axes
+  svg.append("g").attr("transform", `translate(0,${h})`)
+    .call(d3.axisBottom(x).tickFormat(d => d + "s"))
+    .call(g => g.select(".domain").attr("stroke","#d6cfc4"))
+    .selectAll("text").attr("fill","#8a7f74");
+
+  svg.append("g").call(d3.axisLeft(y).ticks(5).tickFormat(d => d + "%"))
+    .call(g => g.select(".domain").attr("stroke","#d6cfc4"))
+    .selectAll("text").attr("fill","#8a7f74");
+
+  svg.append("text").attr("x", w/2).attr("y", h + 46)
+    .attr("text-anchor","middle").attr("fill","#8a7f74").attr("font-size","0.8rem")
+    .text("Publication Decade");
+
+  svg.append("text").attr("transform","rotate(-90)")
+    .attr("x", -h/2).attr("y", -40)
+    .attr("text-anchor","middle").attr("fill","#8a7f74").attr("font-size","0.8rem")
+    .text("% of books mentioning creature");
+
+  const line = d3.line()
+    .x(d => x(d.decade))
+    .y(d => y(d.pct))
+    .curve(d3.curveMonotoneX);
+
+  // Invisible thick overlay per line for easier hover
+  const hoverLine = d3.line()
+    .x(d => x(d.decade))
+    .y(d => y(d.pct))
+    .curve(d3.curveMonotoneX);
+
+  visible.forEach(name => {
+    const series = creatureData.map(d => ({
+      decade: d.decade, pct: d[name], count: d[name + "_count"], total: d.total
+    }));
+
+    // Visible path
+    svg.append("path")
+      .datum(series)
+      .attr("fill","none")
+      .attr("stroke", color(name))
+      .attr("stroke-width", 2.5)
+      .attr("opacity", 0.85)
+      .attr("d", line);
+
+    // Dots
+    svg.selectAll(`.dot-${name}`)
+      .data(series)
+      .join("circle")
+      .attr("cx", d => x(d.decade))
+      .attr("cy", d => y(d.pct))
+      .attr("r", 4)
+      .attr("fill", color(name))
+      .attr("stroke", "#faf7f2")
+      .attr("stroke-width", 1.5)
+      .on("mousemove", (event, d) => showTip(
+        `<strong>${name} · ${d.decade}s</strong>` +
+        `${d.pct.toFixed(1)}% of books (${d.count} of ${d.total})`, event
+      ))
+      .on("mouseleave", hideTip);
+  });
 }
 </script>
 </body>

@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
-from src.data.loader import load_books
+from src.data.loader import load_books, load_raw
 from src.features.extract import (
     add_era,
     add_normalized_rating,
@@ -21,6 +21,7 @@ from src.features.extract import (
     ratings_by_era,
     top_authors,
 )
+from src.features.creatures import CREATURES, detect_creatures
 from src.utils.helpers import df_to_records, save_json
 
 OUT = Path("data/processed")
@@ -67,7 +68,53 @@ def main():
     save_json(df_to_records(ta), OUT / "top_authors.json")
     print(f"  top_authors.json — {len(ta)} authors")
 
+    # 6. Creature timeline
+    raw_books = load_raw()
+    creature_timeline = _build_creature_timeline(raw_books, df)
+    save_json(creature_timeline, OUT / "creature_timeline.json")
+    print(f"  creature_timeline.json — {len(creature_timeline)} decades")
+
     print("\nDone. Processed files written to data/processed/")
+
+
+def _build_creature_timeline(raw_books: list, df) -> list:
+    """
+    For each decade (1800–2020), compute what % of books published that decade
+    mention each creature. Returns a list of dicts, one per decade.
+    """
+    import math
+
+    # Map book id → release_year from the flat DataFrame
+    year_map = df.set_index("id")["release_year"].dropna().to_dict()
+
+    # Bucket each raw book into a decade and record creature hits
+    decade_totals: dict = {}   # decade → total book count
+    decade_hits: dict = {}     # decade → {creature → count}
+
+    for book in raw_books:
+        year = year_map.get(book["id"])
+        if not year or math.isnan(float(year)) or year < 1800 or year > 2025:
+            continue
+        decade = int(year // 10) * 10
+        decade_totals[decade] = decade_totals.get(decade, 0) + 1
+
+        mentioned = detect_creatures(book)
+        if decade not in decade_hits:
+            decade_hits[decade] = {c: 0 for c in CREATURES}
+        for c in mentioned:
+            decade_hits[decade][c] += 1
+
+    rows = []
+    for decade in sorted(decade_totals):
+        total = decade_totals[decade]
+        row = {"decade": decade, "total": total}
+        hits = decade_hits.get(decade, {})
+        for creature in CREATURES:
+            count = hits.get(creature, 0)
+            row[creature] = round(count / total * 100, 1)
+            row[f"{creature}_count"] = count
+        rows.append(row)
+    return rows
 
 
 if __name__ == "__main__":
