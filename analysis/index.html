@@ -56,7 +56,7 @@
     .hero-lede {
       font-size: 1.1rem;
       color: var(--muted);
-      max-width: 55ch;
+      max-width: 75ch;
       margin: 0 auto 2rem;
       line-height: 1.8;
     }
@@ -106,6 +106,14 @@
       font-family: var(--mono);
       margin-bottom: 2rem;
       max-width: 60ch;
+    }
+
+    .section-summary {
+      font-size: 0.88rem;
+      color: var(--mono);
+      font-family: var(--mono);
+      margin-bottom: 2rem;
+      max-width: 75ch;
     }
 
     .stat-grid {
@@ -279,7 +287,8 @@
 <header class="hero">
   <div class="col">
     <h1>It's Official:<br>Ghosts Are Coming Back</h1>
-    <p class="hero-lede">After I finished all 3 books from the Emily Wilde Series by Heather Fawcett in 2 days, I realized how much I love what people call "cozy adult fantasy." So I pulled 1,000 books to find out what's really in them — specifically which creatures show up, how readers feel about them, and which ones travel together.</p>
+    <p class="hero-lede">After I finished all 3 books in the Emily Wilde Series by Heather Fawcett in just two days, I found myself in that particular kind of book hangover where you don't want another story — you want more of the same feeling. Cozy libraries, faerie lore, academic heroines, and a slow-burn romance.
+Curious to learn more about fantasy books, I found a great API — Hardcover.app — and pulled 1,000 books to find out what's really in them: which creatures show up, how readers feel about them, and which ones travel together</p>
     <p class="hero-byline">Fantasy books · Data from Hardcover.app · 2026</p>
   </div>
 </header>
@@ -294,7 +303,7 @@
       <h2 class="section-title">Dataset at a Glance</h2>
       <p class="section-desc">Top 1,000 most-reviewed fantasy books on Hardcover.app</p>
       <div class="stat-grid" id="stat-grid"></div>
-      <p class="shelf-eyebrow">Top 10 most popular · 21st century</p>
+      <p class="shelf-eyebrow">Top 10 most-reviewd · 21st century</p>
       <div id="bookshelf"></div>
     </div>
 
@@ -302,6 +311,7 @@
       <p class="section-label">01 — Creature mentions over time</p>
       <h2 class="section-title">Who Shows Up and When</h2>
       <p class="section-desc">% of books per decade whose description mentions each creature. Dot size = books sampled that decade. Hover a line to isolate it.</p>
+            <p class="section-summary">Before the 20th century, ghost and vampire stories dominated. By the late 1900s, the creature landscape diversified — elves, dragons, witches, and wizards entered the mainstream. Vampires carried their popularity into the 21st century, while ghosts, long overlooked by writers, have quietly staged a comeback over the past five years.</p>
       <div id="creature-legend" class="legend"></div>
       <div id="creature-chart"></div>
     </div>
@@ -373,6 +383,14 @@ Promise.all(Object.entries(DATA).map(([k, url]) =>
 const COVERS = {
   "Project Hail Mary": "../src/image/project_hail_mary.png",
   "The Hunger Games":  "../src/image/hunger-games.png",
+  "Harry Potter and the Goblet of Fire":  "../src/image/harry-potter-and-goblet.png",
+  "Harry Potter and the Order of the Phoenix":  "../src/image/harry-potter-and-the-order.png",
+  "Harry Potter and the Deathly Hallows":  "../src/image/harry-potter-and-deathly.png",
+  "Harry Potter and the Half-Blood Prince":  "../src/image/harry-potter-and-half-blood.png",
+  "The Martian":  "../src/image/the-martian.png",
+  "Catching Fire":  "../src/image/catching-fire.png",
+  "Mistborn: The Final Empire":  "../src/image/mistborn.png",
+  "Ready Player One":  "../src/image/ready-player-one.png"
 };
 
 function renderBookshelf(books) {
